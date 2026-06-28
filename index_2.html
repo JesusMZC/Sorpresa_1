@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Para Ti, Mi Amor ⚡</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a0a00;
+    color: #f5e6c8;
+    font-family: 'EB Garamond', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── MAPA DEL MERODEADOR ── */
+  #marauder-screen {
+    position: fixed;
+    inset: 0;
+    background: #d4b896;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 1s ease;
+  }
+
+  #marauder-screen.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #map-canvas {
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
+  }
+
+  .map-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .map-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.1rem, 4vw, 2rem);
+    color: #2c1810;
+    letter-spacing: 0.3em;
+    margin-bottom: 1.5rem;
+  }
+
+  .map-lines { width: min(400px, 90vw); margin: 0 auto 1.5rem; }
+
+  .map-line {
+    height: 1px;
+    background: #2c1810;
+    margin: 9px 0;
+    opacity: 0;
+    transform-origin: left;
+    animation: drawLine 0.4s ease forwards;
+  }
+  .map-line:nth-child(1) { animation-delay: 0.3s; width: 100%; }
+  .map-line:nth-child(2) { animation-delay: 0.6s; width: 78%; margin-left: 11%; }
+  .map-line:nth-child(3) { animation-delay: 0.9s; width: 90%; margin-left: 5%; }
+  .map-line:nth-child(4) { animation-delay: 1.2s; width: 68%; margin-left: 16%; }
+  .map-line:nth-child(5) { animation-delay: 1.5s; width: 85%; margin-left: 5%; }
+
+  @keyframes drawLine {
+    from { opacity: 0; transform: scaleX(0); }
+    to   { opacity: 0.6; transform: scaleX(1); }
+  }
+
+  .footprints-row {
+    display: flex; justify-content: center; gap: 1rem;
+    margin: 1rem 0; font-size: 1.5rem;
+    opacity: 0; animation: appear 0.5s ease 2s forwards;
+  }
+
+  .map-inscription {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: clamp(0.9rem, 2.5vw, 1.15rem);
+    color: #2c1810;
+    line-height: 1.9;
+    opacity: 0;
+    animation: appear 0.8s ease 2.5s forwards;
+    max-width: 380px;
+    margin: 0 auto;
+  }
+
+  .map-tap-hint {
+    margin-top: 2rem;
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    color: #5a3a28;
+    letter-spacing: 0.22em;
+    opacity: 0;
+    animation: pulse 1.6s ease-in-out 3.5s infinite;
+  }
+
+  @keyframes appear {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.35; }
+    50%       { opacity: 1; }
+  }
+
+  /* ── MAIN PAGE ── */
+  #main-page { display: none; min-height: 100vh; }
+  #main-page.visible { display: block; }
+
+  /* Stars */
+  .stars-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .star {
+    position: absolute; width: 2px; height: 2px;
+    background: #f5e6c8; border-radius: 50%;
+    animation: twinkle var(--dur, 3s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.15; transform: scale(1); }
+    50%       { opacity: 1;    transform: scale(1.6); }
+  }
+
+  /* Candles */
+  .candles-row {
+    display: flex; justify-content: center;
+    gap: clamp(1rem, 5vw, 4rem);
+    padding: 2rem 1rem 1rem;
+    position: relative; z-index: 1;
+  }
+  .candle { display: flex; flex-direction: column; align-items: center; }
+  .flame {
+    width: 10px; height: 18px;
+    background: radial-gradient(ellipse at 50% 100%, #ff9800, #ffeb3b, transparent);
+    border-radius: 50% 50% 30% 30%;
+    animation: flicker 1.5s ease-in-out infinite alternate;
+    filter: blur(0.5px);
+  }
+  @keyframes flicker {
+    from { transform: scaleX(1)    scaleY(1)    rotate(-2deg); opacity: 0.9; }
+    to   { transform: scaleX(0.85) scaleY(1.15) rotate(2deg);  opacity: 1;   }
+  }
+  .candle-body {
+    width: 10px; height: 48px;
+    background: linear-gradient(to right, #d4b896, #f5e6c8, #d4b896);
+    border-radius: 2px;
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: clamp(1rem, 4vw, 2rem) 1rem;
+    position: relative; z-index: 1;
+  }
+  .hero-badge {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-size: clamp(0.6rem, 2vw, 0.85rem);
+    letter-spacing: 0.4em; color: #c4a44a;
+    border: 1px solid #c4a44a44;
+    padding: 0.4rem 1.2rem; border-radius: 2px;
+    margin-bottom: 1rem;
+  }
+  .hero-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(2rem, 8vw, 4.5rem);
+    color: #c4a44a; line-height: 1.1;
+    text-shadow: 0 0 40px rgba(196,164,74,0.35);
+    margin-bottom: 0.5rem;
+  }
+  .hero-subtitle {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    color: #d4b896; opacity: 0.8;
+  }
+
+  /* Divider */
+  .divider {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1.5rem clamp(1rem, 5vw, 4rem);
+    position: relative; z-index: 1;
+  }
+  .divider-line {
+    flex: 1; height: 1px;
+    background: linear-gradient(to right, transparent, #c4a44a55, transparent);
+  }
+  .divider-icon { color: #c4a44a; font-size: 1.2rem; }
+
+  /* Slideshow */
+  .slideshow-section {
+    position: relative; z-index: 1;
+    padding: 0 clamp(0.5rem, 3vw, 2rem) 2rem;
+  }
+  .section-label {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(0.6rem, 2vw, 0.75rem);
+    letter-spacing: 0.3em; color: #c4a44a88;
+    text-align: center; margin-bottom: 1rem;
+  }
+  .slideshow-frame {
+    position: relative; max-width: 680px; margin: 0 auto;
+    border: 2px solid #c4a44a44; border-radius: 4px;
+    overflow: hidden; background: #0d0500;
+    aspect-ratio: 9/16;
+    max-width: 380px;
+  }
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 1s ease;
+  }
+  .slide.active { opacity: 1; }
+  .slide-photo-area { width: 100%; height: 100%; position: relative; overflow: hidden; }
+
+  /* ── REEMPLAZA cada .slide-placeholder-bg con una etiqueta <img> ── */
+  .slide-placeholder-bg {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 1rem;
+  }
+  .photo-slot-number {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.5rem, 5vw, 3rem); color: #c4a44a44;
+  }
+  .photo-slot-label {
+    font-family: 'EB Garamond', serif; font-style: italic;
+    font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+    color: #c4a44a66; letter-spacing: 0.1em;
+  }
+  /* Cuando uses <img> en el slide: */
+  .slide img {
+    width: 100%; height: 100%; object-fit: cover; display: block; object-position: center top;
+  }
+
+  .slide-caption {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: clamp(0.8rem,2vw,1.2rem) 1.5rem;
+    background: linear-gradient(transparent, rgba(10,3,0,0.95));
+    font-family: 'EB Garamond', serif; font-style: italic;
+    font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+    color: #f5e6c8; text-align: center;
+  }
+
+  .slide-bg-1 { background: radial-gradient(ellipse at 30% 40%, #3d1a0a, #1a0a00); }
+  .slide-bg-2 { background: radial-gradient(ellipse at 70% 30%, #1a0d3d, #0a001a); }
+  .slide-bg-3 { background: radial-gradient(ellipse at 50% 60%, #1a2d0a, #001a05); }
+  .slide-bg-4 { background: radial-gradient(ellipse at 40% 50%, #3d2a0a, #1a0a00); }
+
+  .slideshow-nav {
+    display: flex; align-items: center; justify-content: center;
+    gap: 1rem; margin-top: 1rem;
+  }
+  .nav-btn {
+    background: none; border: 1px solid #c4a44a55;
+    color: #c4a44a; padding: 0.4rem 1rem;
+    font-family: 'Cinzel', serif; font-size: 0.75rem;
+    letter-spacing: 0.15em; cursor: pointer; border-radius: 2px;
+    transition: all 0.3s;
+  }
+  .nav-btn:hover { background: #c4a44a22; border-color: #c4a44a; }
+  .nav-dots { display: flex; gap: 0.5rem; }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #c4a44a33; transition: background 0.3s; cursor: pointer;
+  }
+  .dot.active { background: #c4a44a; }
+
+  /* Letter */
+  .letter-section {
+    position: relative; z-index: 1;
+    padding: 1rem clamp(0.5rem, 4vw, 2rem) 2rem;
+  }
+  .letter-paper {
+    max-width: 680px; margin: 0 auto;
+    background: #f5e6c8; color: #2c1810;
+    border-radius: 2px;
+    padding: clamp(1.5rem, 5vw, 3rem) clamp(1.5rem, 6vw, 4rem);
+    position: relative;
+    box-shadow: inset 0 0 60px rgba(196,164,74,0.1), 0 4px 40px rgba(0,0,0,0.6);
+  }
+  .letter-paper::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      transparent, transparent 27px, rgba(44,24,16,0.08) 28px
+    );
+    border-radius: 2px; pointer-events: none;
+  }
+  .letter-seal { text-align: center; margin-bottom: 1.5rem; font-size: 2rem; color: #8b2020; }
+  .letter-date {
+    font-family: 'EB Garamond', serif; font-style: italic;
+    font-size: 0.95rem; color: #5a3a28;
+    text-align: right; margin-bottom: 1.5rem; position: relative; z-index: 1;
+  }
+  .letter-greeting {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1rem, 3vw, 1.4rem);
+    color: #2c1810; margin-bottom: 1.2rem;
+    position: relative; z-index: 1;
+  }
+  .letter-body {
+    font-family: 'EB Garamond', serif;
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    line-height: 2; color: #2c1810;
+    position: relative; z-index: 1;
+  }
+  .letter-body p { margin-bottom: 1.2rem; }
+  .letter-signature {
+    text-align: right; margin-top: 2rem;
+    position: relative; z-index: 1;
+  }
+  .letter-sign-name {
+    font-family: 'EB Garamond', serif; font-style: italic;
+    font-size: clamp(0.9rem, 2.5vw, 1.15rem); color: #2c1810;
+  }
+
+  /* Footer */
+  .footer {
+    position: relative; z-index: 1;
+    text-align: center; padding: 2rem 1rem 3rem;
+  }
+  .footer-text {
+    font-family: 'Cinzel', serif; font-size: clamp(0.6rem, 2vw, 0.8rem);
+    letter-spacing: 0.3em; color: #c4a44a55;
+  }
+  .gryffindor-banner {
+    display: flex; justify-content: center; align-items: center;
+    gap: 1rem; margin: 1rem 0;
+  }
+
+  /* Sparks */
+  .sparks { position: fixed; pointer-events: none; z-index: 999; }
+  .spark {
+    position: absolute; width: 4px; height: 4px;
+    border-radius: 50%; animation: sparkFly 1s ease-out forwards;
+  }
+  @keyframes sparkFly {
+    0%   { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0) translate(var(--tx,0), var(--ty,0)); }
+  }
+</style>
+</head>
+<body>
+
+<div id="sparks-container" class="sparks"></div>
+
+<!-- ═══════════════════════════════════════════
+     MAPA DEL MERODEADOR — pantalla de entrada
+     ═══════════════════════════════════════════ -->
+<div id="marauder-screen" onclick="revealPage()">
+  <canvas id="map-canvas"></canvas>
+  <div class="map-content">
+    <div class="map-title">✦ MAPA DEL MERODEADOR ✦</div>
+    <div class="map-lines">
+      <div class="map-line"></div>
+      <div class="map-line"></div>
+      <div class="map-line"></div>
+      <div class="map-line"></div>
+      <div class="map-line"></div>
+    </div>
+    <div class="footprints-row">👣 👣 👣 👣 👣</div>
+    <div class="map-inscription">
+      <em>"Juro solemnemente que mis intenciones no son buenas..."</em><br><br>
+      El mapa revela lo que el corazón guarda.<br>
+      Una sorpresa te espera al otro lado.
+    </div>
+    <div class="map-tap-hint">— TOCA PARA REVELAR —</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     PÁGINA PRINCIPAL
+     ═══════════════════════════════════════════ -->
+<div id="main-page">
+
+  <div class="stars-bg" id="stars"></div>
+
+  <!-- Velas -->
+  <div class="candles-row">
+    <div class="candle"><div class="flame"></div><div class="candle-body" style="height:40px"></div></div>
+    <div class="candle"><div class="flame" style="animation-delay:.3s"></div><div class="candle-body" style="height:55px"></div></div>
+    <div class="candle"><div class="flame" style="animation-delay:.7s"></div><div class="candle-body" style="height:48px"></div></div>
+    <div class="candle"><div class="flame" style="animation-delay:.5s"></div><div class="candle-body" style="height:60px"></div></div>
+    <div class="candle"><div class="flame" style="animation-delay:.2s"></div><div class="candle-body" style="height:44px"></div></div>
+  </div>
+
+  <!-- Encabezado -->
+  <div class="hero">
+    <div class="hero-badge">✦ CASA GRYFFINDOR · 37 MESES ✦</div>
+    <h1 class="hero-title">Para Ti,<br>Mi Amor</h1>
+    <p class="hero-subtitle">Un hechizo escrito con el corazón</p>
+  </div>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-icon">⚡</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       SLIDESHOW
+       — Para añadir tus fotos, reemplaza
+         cada bloque .slide-placeholder-bg
+         con: <img src="fotos/fotoX.jpg" alt="...">
+       ═══════════════════════════════════ -->
+  <div class="slideshow-section">
+    <div class="section-label">✦ NUESTROS MOMENTOS ✦</div>
+    <div class="slideshow-frame" id="slideshow">
+
+      <div class="slide active slide-bg-1">
+        <div class="slide-photo-area">
+          <!-- FOTO 1: reemplaza lo de abajo con <img src="fotos/foto1.jpg" alt="Foto 1"> -->
+          <div class="slide-placeholder-bg">
+            <div class="photo-slot-number">I</div>
+            <div class="photo-slot-label"><img src="C:\Users\Jesus Zuñiga\Downloads\Sorpresa\fotos\Foto1.jpeg" alt="Foto 1"></div>
+          </div>
+        </div>
+        <div class="slide-caption">37 meses construyendo nuestra magia ✨</div>
+      </div>
+
+      <div class="slide slide-bg-2">
+        <div class="slide-photo-area">
+          <!-- FOTO 2: reemplaza lo de abajo con <img src="fotos/foto2.jpg" alt="Foto 2"> -->
+          <div class="slide-placeholder-bg">
+            <div class="photo-slot-number">II</div>
+            <div class="photo-slot-label"><img src="C:\Users\Jesus Zuñiga\Downloads\Sorpresa\fotos\Foto2.jpeg" alt="Foto 2"></div>
+          </div>
+        </div>
+        <div class="slide-caption">Cada instante contigo es magia pura 🦁</div>
+      </div>
+
+      <div class="slide slide-bg-3">
+        <div class="slide-photo-area">
+          <!-- FOTO 3: reemplaza lo de abajo con <img src="fotos/foto3.jpg" alt="Foto 3"> -->
+          <div class="slide-placeholder-bg">
+            <div class="photo-slot-number">III</div>
+            <div class="photo-slot-label"><img src="C:\Users\Jesus Zuñiga\Downloads\Sorpresa\fotos\Foto3.jpeg" alt="Foto 3"></div>
+          </div>
+        </div>
+        <div class="slide-caption">El tiempo se detiene cuando estoy contigo 🌟</div>
+      </div>
+
+      <div class="slide slide-bg-4">
+        <div class="slide-photo-area">
+          <!-- FOTO 4: reemplaza lo de abajo con <img src="fotos/foto4.jpg" alt="Foto 4"> -->
+          <div class="slide-placeholder-bg">
+            <div class="photo-slot-number">IV</div>
+            <div class="photo-slot-label"><img src="C:\Users\Jesus Zuñiga\Downloads\Sorpresa\fotos\Foto4.jpeg" alt="Foto 4"></div>
+          </div>
+        </div>
+        <div class="slide-caption">Y así, entre magia y amor, te elegiría siempre ⚡</div>
+      </div>
+
+    </div>
+
+    <div class="slideshow-nav">
+      <button class="nav-btn" onclick="changeSlide(-1)">◀ ANTERIOR</button>
+      <div class="nav-dots">
+        <div class="dot active" onclick="goToSlide(0)"></div>
+        <div class="dot" onclick="goToSlide(1)"></div>
+        <div class="dot" onclick="goToSlide(2)"></div>
+        <div class="dot" onclick="goToSlide(3)"></div>
+      </div>
+      <button class="nav-btn" onclick="changeSlide(1)">SIGUIENTE ▶</button>
+    </div>
+  </div>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-icon">🦁</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════
+       CARTA
+       ═══════════════════════════════════ -->
+  <div class="letter-section">
+    <div class="section-label">✦ UNA CARTA PARA TI ✦</div>
+    <div class="letter-paper">
+      <div class="letter-seal">🦁</div>
+      <div class="letter-date">Hogwarts, 27 de junio de 2026</div>
+      <div class="letter-greeting">Mi amor,</div>
+      <div class="letter-body">
+        <p>
+          Hoy se cumplen treinta y siete meses desde que el universo, con toda su magia
+          y misterio, decidió que nuestros caminos debían cruzarse. Treinta y siete meses
+          que no cuento como tiempo que pasa, sino como magia que se acumula, como
+          estrellas que siguen apareciendo en un cielo que ya creía conocer.
+        </p>
+        <p>
+          Si existiera un hechizo capaz de capturar lo que siento por ti, no habría libro
+          en toda la biblioteca de Hogwarts que pudiera contenerlo. Eres la magia que no
+          encontraba en ningún conjuro, la que apareció sin vara y sin palabras, solo con
+          tu sonrisa y la forma en que iluminas cualquier lugar oscuro como lo hace el
+          <em>Lumos</em> en la noche más cerrada.
+        </p>
+        <p>
+          Hay quienes buscan la piedra filosofal, o el elíxir de la vida eterna. Yo ya
+          encontré lo único que hace que cada día valga la pena: estar a tu lado. Eres
+          valiente como Gryffindor, brillante como ninguna, y tienes un corazón tan
+          grande que haría que incluso los fantasmas de Hogwarts se detuvieran a
+          admirarte.
+        </p>
+        <p>
+          Caminar contigo es como descubrir un pasillo secreto que solo nosotros
+          conocemos. No necesito ningún mapa del merodeador para saber dónde
+          encontrarte: siempre estás donde el corazón me lleva. Y ese lugar, seas
+          donde seas, siempre se siente como casa.
+        </p>
+        <p>
+          Gracias por estos treinta y siete meses de magia real, de los que no se
+          aprenden en Hogwarts sino que se construyen juntos, día a día, con paciencia,
+          con amor y con esa complicidad que solo tú y yo entendemos. Que vengan
+          muchos más.
+        </p>
+        <p>
+          Te amo más que a todas las estrellas del cielo de Hogwarts juntas. Y si en
+          otra vida me preguntaran cuál sería mi encantamiento favorito, respondería sin
+          dudar: tú.
+        </p>
+      </div>
+      <div class="letter-signature">
+        <div class="letter-sign-name">
+          Con todo mi amor,<br>
+          Tu eterno compañero de aventuras ⚡
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider">
+    <div class="divider-line"></div>
+    <div class="divider-icon">✨</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="gryffindor-banner">
+      <span style="color:#8b2020;font-size:1.5rem">🦁</span>
+      <span style="font-family:'Cinzel',serif;font-size:clamp(0.65rem,2vw,0.85rem);letter-spacing:0.25em;color:#c4a44a88">GRYFFINDOR · VALENTÍA · 37 MESES DE AMOR</span>
+      <span style="color:#8b2020;font-size:1.5rem">🦁</span>
+    </div>
+    <div class="footer-text">✦ Hecho con magia y amor · 27/06/2026 ✦</div>
+  </div>
+
+</div><!-- /main-page -->
+
+<script>
+  /* ── Slideshow ── */
+  let currentSlide = 0;
+  const totalSlides = 4;
+  let autoTimer;
+
+  function goToSlide(n) {
+    const slides = document.querySelectorAll('.slide');
+    const dots   = document.querySelectorAll('.dot');
+    slides[currentSlide].classList.remove('active');
+    dots[currentSlide].classList.remove('active');
+    currentSlide = (n + totalSlides) % totalSlides;
+    slides[currentSlide].classList.add('active');
+    dots[currentSlide].classList.add('active');
+  }
+
+  function changeSlide(dir) {
+    clearInterval(autoTimer);
+    goToSlide(currentSlide + dir);
+    startSlideshow();
+  }
+
+  function startSlideshow() {
+    clearInterval(autoTimer);
+    autoTimer = setInterval(() => goToSlide(currentSlide + 1), 5000);
+  }
+
+  /* ── Stars ── */
+  function createStars() {
+    const container = document.getElementById('stars');
+    for (let i = 0; i < 90; i++) {
+      const star = document.createElement('div');
+      star.className = 'star';
+      star.style.cssText = `
+        left:${Math.random()*100}%;
+        top:${Math.random()*100}%;
+        --dur:${2+Math.random()*4}s;
+        --delay:${Math.random()*5}s;
+        opacity:${0.2+Math.random()*0.8};
+      `;
+      container.appendChild(star);
+    }
+  }
+
+  /* ── Reveal ── */
+  function revealPage() {
+    const screen = document.getElementById('marauder-screen');
+    const main   = document.getElementById('main-page');
+    screen.classList.add('fade-out');
+    setTimeout(() => {
+      screen.style.display = 'none';
+      main.classList.add('visible');
+      createStars();
+      startSlideshow();
+    }, 1000);
+  }
+
+  /* ── Map canvas parchment lines ── */
+  window.addEventListener('load', () => {
+    const canvas = document.getElementById('map-canvas');
+    const ctx    = canvas.getContext('2d');
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    ctx.strokeStyle = '#2c1810';
+    ctx.lineWidth   = 0.5;
+    for (let i = 0; i < 35; i++) {
+      ctx.beginPath();
+      ctx.moveTo(Math.random()*canvas.width, Math.random()*canvas.height);
+      ctx.lineTo(Math.random()*canvas.width, Math.random()*canvas.height);
+      ctx.stroke();
+    }
+    for (let i = 0; i < 18; i++) {
+      ctx.beginPath();
+      ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height,
+              30+Math.random()*90, 0, Math.PI*2);
+      ctx.stroke();
+    }
+  });
+
+  /* ── Sparks on click ── */
+  document.addEventListener('click', (e) => {
+    if (!document.getElementById('main-page').classList.contains('visible')) return;
+    const sc = document.getElementById('sparks-container');
+    const colors = ['#c4a44a','#8b2020','#f5e6c8','#ffeb3b','#e53935'];
+    for (let i = 0; i < 10; i++) {
+      const spark = document.createElement('div');
+      spark.className = 'spark';
+      const angle = (Math.PI * 2 / 10) * i;
+      const dist  = 30 + Math.random() * 50;
+      spark.style.cssText = `
+        left:${e.clientX}px; top:${e.clientY}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        --tx:${Math.cos(angle)*dist}px;
+        --ty:${Math.sin(angle)*dist}px;
+      `;
+      sc.appendChild(spark);
+      setTimeout(() => spark.remove(), 1000);
+    }
+  });
+</script>
+</body>
+</html>
